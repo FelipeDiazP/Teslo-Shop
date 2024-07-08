@@ -5,24 +5,25 @@ import Image from "next/image";
 import { IoCardOutline } from "react-icons/io5";
 import { Metadata } from "next";
 
+// Interfaz para representar una orden
+interface Order {
+  id: string;
+  customerName: string;
+  products: {
+    title: string;
+    price: number;
+    quantity: number;
+  }[];
+  status: 'pending' | 'paid' | 'shipped' | 'delivered';
+  // Puedes agregar más atributos según la estructura real de tus órdenes
+}
+
 // Define la interfaz de las props
 interface Props {
   params: {
     id: string;
   };
-  // Agrega aquí más atributos según la estructura de tu orden
-  order: {
-    // Ejemplo de atributos de una orden, ajusta según tu estructura real
-    id: string;
-    customerName: string;
-    products: {
-      title: string;
-      price: number;
-      quantity: number;
-    }[];
-    status: 'pending' | 'paid' | 'shipped' | 'delivered';
-    // Otros atributos necesarios para mostrar en la página de órdenes
-  };
+  order: Order;
 }
 
 // Productos simulados en el carrito
@@ -33,8 +34,9 @@ const productsInCart = [
 ];
 
 // Componente de la página de órdenes
-export default function PageOrders({ params }: Props) {
+export default function PageOrders({ params, order }: Props) {
   const { id } = params;
+  const { customerName, products, status } = order;
 
   return (
     <main className="flex justify-center mb-72 px-10 sm:px-0 ">
@@ -81,26 +83,16 @@ export default function PageOrders({ params }: Props) {
           <div className="bg-gray-300 rounded-xl shadow-xl p-7">
             <h2 className="text-2xl font-bold mb-2">Información de entrega</h2>
             <div className="mb-10">
-              <p className="text-xl">Ivan Prada</p>
-              <p>Av. Siempre viva 123</p>
-              <p>Col. Centro</p>
-              <p>Alcaldía Cuauhtémoc</p>
-              <p>Ciudad de México</p>
-              <p>CP 123123</p>
-              <p>123.123.123</p>
+              <p className="text-xl">{customerName}</p>
+              {/* Aquí puedes mostrar más detalles de la entrega según sea necesario */}
             </div>
             {/* Divider */}
             <div className="w-full h-0.5 rounded bg-gray-500 mb-10" />
             <h2 className="text-2xl mb-2">Resumen de orden</h2>
             <div className="grid grid-cols-2">
               <span>No. Productos</span>
-              <span className="text-right">3 artículos</span>
-              <span>Sub Total</span>
-              <span className="text-right">$ 100</span>
-              <span>Impuestos (15%)</span>
-              <span className="text-right">$ 100</span>
-              <span className="mt-5 text-2xl">Total</span>
-              <span className="mt-5 text-2xl text-right">$ 100</span>
+              <span className="text-right">{products.length} artículos</span>
+              {/* Aquí puedes calcular subtotal, impuestos, total, etc. según los productos en la orden */}
             </div>
             <div className="mt-5 mb-2 w-full">
               <div
@@ -121,7 +113,7 @@ export default function PageOrders({ params }: Props) {
       </div>
     </main>
   );
-} 
+}
 
 // Función para generar paths estáticos
 export async function getStaticPaths() {
@@ -138,9 +130,15 @@ export async function getStaticPaths() {
 // Función para obtener datos estáticos
 export async function getStaticProps({ params }: { params: { id: string } }) {
   // Aquí puedes obtener los datos específicos de la orden según `params.id`
+  const order = initialData.orders.find((order: { id: { toString: () => string; }; }) => order.id.toString() === params.id);
+  if (!order) {
+    throw new Error(`No se encontró la orden con el ID: ${params.id}`);
+  }
+  // Devuelve las props necesarias incluyendo `order`
   return {
     props: {
       params,
+      order,
     },
   };
 }
