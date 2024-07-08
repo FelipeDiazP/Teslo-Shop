@@ -10,6 +10,19 @@ interface Props {
   params: {
     id: string;
   };
+  // Agrega aquí más atributos según la estructura de tu orden
+  order: {
+    // Ejemplo de atributos de una orden, ajusta según tu estructura real
+    id: string;
+    customerName: string;
+    products: {
+      title: string;
+      price: number;
+      quantity: number;
+    }[];
+    status: 'pending' | 'paid' | 'shipped' | 'delivered';
+    // Otros atributos necesarios para mostrar en la página de órdenes
+  };
 }
 
 // Productos simulados en el carrito
@@ -108,24 +121,26 @@ export default function PageOrders({ params }: Props) {
       </div>
     </main>
   );
-}
+} 
 
-// Función para generar parámetros estáticos
-export async function generateStaticParams() {
+// Función para generar paths estáticos
+export async function getStaticPaths() {
   const orders = initialData.orders || []; // Asegúrate de que orders esté definido
-  if (!orders) {
-    return [];
-  }
-  const params = orders.map((order: { id: { toString: () => any; }; }) => ({
-    id: order.id.toString(),
+  const paths = orders.map((order: { id: { toString: () => any; }; }) => ({
+    params: { id: order.id.toString() },
   }));
-  return params;
+  return {
+    paths,
+    fallback: false, // Puedes ajustar según tus necesidades
+  };
 }
 
-// Función para generar metadata estática
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params;
+// Función para obtener datos estáticos
+export async function getStaticProps({ params }: { params: { id: string } }) {
+  // Aquí puedes obtener los datos específicos de la orden según `params.id`
   return {
-    title: `Orden #${id}`,
+    props: {
+      params,
+    },
   };
 }
